@@ -14,7 +14,7 @@ Phaser3.jsを使ってHTML5のゲームを作るときに参考にしてもら�
  
 以下のアドレスでプレイすることができます。
 
-[DarumaSan](https://tinycore-hisanori.github.io/phaser3_blockbreak/)
+[DarumaSan](https://tinycore-hisanori.github.io/phaser3_vsCpuDaruma/)
 
 
 # Features

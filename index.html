@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="viewport"
+        content="width = device-width, initial-scale = 1.0, minimum-scale = 1, maximum-scale = 1, user-scalable = no, viewport-fit=cover,minimal-ui" />
+    <title></title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/matter-js@0.17.1/build/matter.min.js"></script>
+       
+    <script src="https://cdn.jsdelivr.net/npm/howler@2.2.3/dist/howler.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
+</head>
+
+<style type="text/css">
+    body {
+        background-color: black;
+        min-height: 100vh;
+        min-width: 100vw;
+        height: 100%;
+        width: 100vw;
+        margin: auto;
+    }
+
+    #container {
+        position: absolute;
+        overflow: hidden;
+    }
+</style>
+
+<body>
+    <script>
+
+        var seVoice = new Howl({
+            src: ['voice_kr.mp3'],
+            onend: function () {
+                //onVoiceCompleted();
+            }
+        });
+        var seBang = new Howl({
+            src: ['seShoot.mp3']
+        });
+
+
+        var bgmClear = new Howl({
+            src: ['clear.mp3']
+        });
+
+
+        var gameWidth = 720;
+        var gameHeight = 1280;
+        var bgBloodObj;
+        var clickButton;
+        var currentScene = null;
+        var boss, player;
+        var cursors;
+        var txtEnding, btnReturn;
+        var speedVals = [0.8, 1.0, 1.2, 2.0, 3.0, 4.0];
+        var bGame = false;
+        var serifuObj;
+        var actionButton1, actionButton2;
+        var txtTime;
+        var remainTime = 200;
+        var timeCnt = 0;
+
+        function doGoal() {
+            if (bGame == true) {
+                bGame = false;
+                if (seVoice.playing()) {
+                    seVoice.stop();
+                }
+                serifuObj.visible = false;
+                txtEnding.text = "  GAME CLEAR!!  ";
+                btnReturn.visible = true;
+                bgmClear.play();
+            }
+        }
+
+        function doGameOver() {
+            if (bGame == true) {
+                bGame = false;
+                if (seVoice.playing()) {
+                    seVoice.stop();
+                }
+                serifuObj.visible = false;
+                txtEnding.text = "  GAME OVER...";
+                btnReturn.visible = true;
+                player.setFrame(3);
+                seBang.play();
+                bgBloodObj.visible = true;
+            }
+        }
+
+        function onVoiceCompleted() {
+            //boss.turnFront();
+        }
+
+        function onSerifuComplete() {
+            boss.turnFront();
+        }
+
+
+        class titleScene extends Phaser.Scene {
+            constructor() {
+                super({ key: "titleScene", active: true });
+            }
+            preload() {
+                this.load.image("bg000", "./title.png");
+            }
+            create() {
+                currentScene = this;
+
+                var bg001 = this.add
+                    .tileSprite(0, 0, gameWidth, 290, 'bg000')
+                    .setOrigin(0);
+                currentScene.cameras.main.setBackgroundColor(0x333333);
+                /*
+                let text = this.add
+                    .text(150, 100, "Daruma-San Game")
+                    .setFontSize(46)
+                    .setColor("#0");
+                */
+                clickButton = this.add
+                    .text(100, 400, "START TO CLICK")
+                    .setStroke("#0000ff", 4)
+                    .setBackgroundColor("#ddbcff")
+                    .setFontSize("60px")
+                    .setColor("#0f0")
+                    .setInteractive();
+                clickButton.on(
+                    "pointerdown",
+                    () => {
+                        this.scene.start("gameScene");
+                    },
+                    this);
+                this.tweens.add({
+                    targets: clickButton,
+                    alpha: 0.5,
+                    ease: 'Cubic.easeOut',
+                    duration: 500,
+                    repeat: -1,
+                    yoyo: true
+                });
+            }
+        }
+
+
+        class BossDaruma extends Phaser.GameObjects.Sprite {
+            constructor(scene, x, y) {
+                super(scene, x, y, "bossDaruma");
+                scene.add.existing(this);
+                this.setFrame(0);
+                this.cntTime = 0;
+                this.state = 0;//0:BACK
+                this.on('animationcomplete', this.doAnimCompleted);
+            }
+            preUpdate(time, delta) {
+                super.preUpdate(time, delta);
+                if (this.state == 2) {
+                    this.cntTime = this.cntTime - 1;
+                    if (this.cntTime <= 0) {
+                        this.state = 3;
+                        gameState = 3;
+                        this.play("turnBack");
+                    }
+                } else if (this.state == 4) {
+                    this.cntTime = this.cntTime - 1;
+                    if (this.cntTime <= 0) {
+                        this.state = 0;
+                        gameState = 0;
+                    }
+                }
+            }
+            turnFront() {
+                this.state = 1;
+                this.play("turnFront");
+            }
+            doAnimCompleted() {
+                if (this.state == 1) {
+                    gameState = 2;//DEATH TIME
+                    this.cntTime = 120;//random
+                    this.state = 2;
+                } else if (this.state == 3) {
+                    this.cntTime = 60;
+                    this.state = 4;
+                }
+            }
+        }
+
+
+        class gameScene extends Phaser.Scene {
+            constructor() {
+                super({ key: "gameScene", active: false });
+            }
+            preload() {
+                currentScene = this;
+                currentScene.load.image("bgDaruma", "bg.jpg");
+                currentScene.load.image("bgBlood", "bgBlood.png");
+                currentScene.load.spritesheet("playerDaruma", "./player.png", {
+                    frameWidth: 80,
+                    frameHeight: 120
+                });
+                currentScene.load.spritesheet("bossDaruma", "./bossDaruma.png", {
+                    frameWidth: 200,
+                    frameHeight: 200
+                });
+                currentScene.load.spritesheet("bossSerifu", "./serifu.png", {
+                    frameWidth: 720,
+                    frameHeight: 220
+                });
+
+            }
+            create() {
+                currentScene = this;
+                currentScene.add
+                    .tileSprite(0, 0, gameWidth, gameHeight, "bgDaruma")
+                    .setOrigin(0)
+                    .setScrollFactor(0);
+
+                bgBloodObj = currentScene.add.image(0, 0, "bgBlood")
+                    .setOrigin(0);
+                bgBloodObj.visible = false;
+
+                currentScene.anims.create({
+                    key: "walking",
+                    frameRate: 4,
+                    frames: currentScene.anims.generateFrameNumbers("playerDaruma", {
+                        start: 0,
+                        end: 2
+                    }), repeat: -1
+                });
+                currentScene.anims.create({
+                    key: "turnFront",
+                    frameRate: 16,
+                    frames: currentScene.anims.generateFrameNumbers("bossDaruma", {
+                        start: 0,
+                        end: 4
+                    }), repeat: 0
+                });
+                currentScene.anims.create({
+                    key: "turnBack",
+                    frameRate: 20,
+                    frames: currentScene.anims.generateFrameNumbers("bossDaruma", {
+                        start: 4,
+                        end: 8
+                    }), repeat: 0
+                });
+
+                currentScene.anims.create({
+                    key: "serifuSpeed0",
+                    frameRate: 2.0,
+                    frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
+                        start: 0,
+                        end: 10
+                    }), repeat: 0
+                });
+                currentScene.anims.create({
+                    key: "serifuSpeed1",
+                    frameRate: 2.5,
+                    frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
+                        start: 0,
+                        end: 10
+                    }), repeat: 0
+                });
+                currentScene.anims.create({
+                    key: "serifuSpeed2",
+                    frameRate: 3.0,
+                    frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
+                        start: 0,
+                        end: 10
+                    }), repeat: 0
+                });
+                currentScene.anims.create({
+                    key: "serifuSpeed3",
+                    frameRate: 5.0,
+                    frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
+                        start: 0,
+                        end: 10
+                    }), repeat: 0
+                });
+                currentScene.anims.create({
+                    key: "serifuSpeed4",
+                    frameRate: 6.0,
+                    frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
+                        start: 0,
+                        end: 10
+                    }), repeat: 0
+                });
+                currentScene.anims.create({
+                    key: "serifuSpeed5",
+                    frameRate: 8.0,
+                    frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
+                        start: 0,
+                        end: 10
+                    }), repeat: 0
+                });
+
+                boss = new BossDaruma(currentScene, gameWidth / 2, 150);
+                //                boss.anims.play('turnFront', true);
+
+                player = currentScene.add.sprite(gameWidth / 3, 1000, "playerDaruma");
+                player.setFrame(0);
+                player.setScale(10.0);
+
+                player.play("walking");
+                player.stop();
+
+                serifuObj = currentScene.add.sprite(gameWidth / 2, 110, "bossSerifu");
+                serifuObj.on('animationcomplete', onSerifuComplete);
+
+                cursors = this.input.keyboard.createCursorKeys();
+
+                actionButton1 = this.add.circle(80, 1000, 80, 0x6666ff).setScrollFactor(0).setInteractive();
+                actionButton1.setAlpha(0.5);
+                actionButton1.on("pointerdown",
+                    () => {
+                        pushingKeyCode = 1;
+                    },
+                    this);
+                actionButton2 = this.add.circle(650, 1000, 80, 0x6666ff).setScrollFactor(0).setInteractive();
+                actionButton2.setAlpha(0.5);
+                actionButton2.on("pointerdown",
+                    () => {
+                        pushingKeyCode = 2;
+                    },
+                    this);
+
+
+                txtTime = currentScene.add
+                    .text(200, 1200, "残り:  ")
+                    .setScrollFactor(0)
+                    .setFontSize(70)
+                    .setStroke("#0000ff", 4)
+                    .setColor("#ff0");
+
+                txtEnding = currentScene.add
+                    .text(200, 100, "")
+                    .setScrollFactor(0)
+                    .setFontSize(46)
+                    .setColor("#ff0");
+
+                btnReturn = currentScene.add
+                    .text(gameWidth / 2 - 100, 400, " BACK ")
+                    .setScrollFactor(0)
+                    .setFontSize(46)
+                    .setColor("#ff0")
+                    .setBackgroundColor("#aa5500")
+                    .setInteractive();
+                btnReturn.on(
+                    "pointerdown",
+                    () => {
+                        this.scene.start("titleScene");
+                    },
+                    currentScene);
+                btnReturn.visible = false;
+
+                playerFoot = -1;
+                playerDistance = 0;
+                gameState = 0;
+                pushingKeyCode = 0;
+                remainTime = 40;
+                timeCnt = 0;
+                bGame = true;
+            }
+            update() {
+                if (bGame == true) {
+                    timeCnt = (timeCnt + 1) % 60;
+                    if (timeCnt == 0) {
+                        remainTime = remainTime - 1;
+                        if (remainTime < 0) {
+                            //DEATH
+                            doGameOver();
+                        } else {
+                            txtTime.text = "残り:" + remainTime;
+                        }
+                    }
+                    if (gameState == 0) {
+                        gameState = 1;
+                        var id2 = seVoice.play();
+                        var a = Math.floor(Math.random() * speedVals.length);
+                        seVoice.rate(speedVals[a], id2);
+                        serifuObj.play("serifuSpeed" + a);
+
+                    }
+                    if (cursors.left.isDown || pushingKeyCode == 1) {
+                        if (playerFoot != 0) {
+                            if (gameState == 2) {
+                                //DEATH
+                                doGameOver();
+                            } else {
+                                player.y = player.y - 5;
+                                playerDistance = playerDistance + 4;
+                                playerFoot = 0;
+                                player.setScale(10.0 - (9 / 800 * playerDistance));
+                                player.setFrame(1);
+
+                                if (player.y < 150) {
+                                    doGoal();
+                                }
+                            }
+                        }
+                    } else if (cursors.right.isDown || pushingKeyCode == 2) {
+                        if (playerFoot != 1) {
+                            if (gameState == 2) {
+                                //DEATH
+                                doGameOver();
+                            } else {
+                                player.y = player.y - 5;
+                                playerDistance = playerDistance + 4;
+                                playerFoot = 1;
+                                player.setScale(10.0 - (9 / 800 * playerDistance));
+                                player.setFrame(2);
+
+                                if (player.y < 150) {
+                                    doGoal();
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+        var playerFoot = -1;
+        var playerDistance = 0;
+        var gameState = 0;
+        var pushingKeyCode = 0;
+
+
+        var config = {
+            type: Phaser.AUTO,
+            width: gameWidth,
+            height: gameHeight,
+            input: {
+                activePointers: 10 //Max enable of multi touch Points(1-10)
+            },
+            backgroundColor: "#eaffff",
+            autoResize: true,
+            scale: {
+                mode: Phaser.Scale.FIT,
+                autoCenter: Phaser.Scale.CENTER_BOTH,
+            },
+            parent: 'game',
+            audio: { disableWebAudio: true },
+            scene: [titleScene, gameScene]
+        }
+        var game = new Phaser.Game(config);
+
+    </script>
+</body>
+
+</html>

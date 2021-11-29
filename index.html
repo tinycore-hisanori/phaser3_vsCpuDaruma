@@ -306,7 +306,7 @@
 
                 serifuObj = currentScene.add.sprite(gameWidth / 2, 110, "bossSerifu");
                 serifuObj.on('animationcomplete', onSerifuComplete);
-                serifuObj.visible = false;
+                serifuObj.setFrame(0);
                 cursors = this.input.keyboard.createCursorKeys();
 
                 actionButton1 = this.add.circle(80, 1000, 80, 0x6666ff).setScrollFactor(0).setInteractive();

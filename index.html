@@ -92,11 +92,11 @@
         }
 
         function onVoiceCompleted() {
-            //boss.turnFront();
+            boss.turnFront();
         }
 
         function onSerifuComplete() {
-            boss.turnFront();
+            //boss.turnFront();
         }
 
 
@@ -307,6 +307,7 @@
                 serifuObj = currentScene.add.sprite(gameWidth / 2, 110, "bossSerifu");
                 serifuObj.on('animationcomplete', onSerifuComplete);
                 serifuObj.setFrame(0);
+
                 cursors = this.input.keyboard.createCursorKeys();
 
                 actionButton1 = this.add.circle(80, 1000, 80, 0x6666ff).setScrollFactor(0).setInteractive();
@@ -378,7 +379,7 @@
                         var id2 = seVoice.play();
                         var a = Math.floor(Math.random() * speedVals.length);
                         seVoice.rate(speedVals[a], id2);
-                        serifuObj.play("serifuSpeed" + a);
+                        //serifuObj.play("serifuSpeed" + a);
 
                     }
                     if (cursors.left.isDown || pushingKeyCode == 1) {

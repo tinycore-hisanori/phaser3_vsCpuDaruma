@@ -9,10 +9,7 @@
         content="width = device-width, initial-scale = 1.0, minimum-scale = 1, maximum-scale = 1, user-scalable = no, viewport-fit=cover,minimal-ui" />
     <title></title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/matter-js@0.17.1/build/matter.min.js"></script>
-       
     <script src="https://cdn.jsdelivr.net/npm/howler@2.2.3/dist/howler.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 </head>
 
 <style type="text/css">
@@ -196,18 +193,17 @@
                 super({ key: "gameScene", active: false });
             }
             preload() {
-                currentScene = this;
-                currentScene.load.image("bgDaruma", "bg.jpg");
-                currentScene.load.image("bgBlood", "bgBlood.png");
-                currentScene.load.spritesheet("playerDaruma", "./player.png", {
+                this.load.image("bgDaruma", "bg.jpg");
+                this.load.image("bgBlood", "bgBlood.png");
+                this.load.spritesheet("playerDaruma", "./player.png", {
                     frameWidth: 80,
                     frameHeight: 120
                 });
-                currentScene.load.spritesheet("bossDaruma", "./bossDaruma.png", {
+                this.load.spritesheet("bossDaruma", "./bossDaruma.png", {
                     frameWidth: 200,
                     frameHeight: 200
                 });
-                currentScene.load.spritesheet("bossSerifu", "./serifu.png", {
+                this.load.spritesheet("bossSerifu", "./serifu.png", {
                     frameWidth: 720,
                     frameHeight: 220
                 });

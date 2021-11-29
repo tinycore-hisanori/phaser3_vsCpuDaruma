@@ -306,7 +306,9 @@
 
                 serifuObj = currentScene.add.sprite(gameWidth / 2, 110, "bossSerifu");
                 serifuObj.on('animationcomplete', onSerifuComplete);
-                serifuObj.setFrame(0);
+                serifuObj.setAlpha(0.5);
+                serifuObj.setFrame(9);
+                serifuObj.setScale(0.7);
 
                 cursors = this.input.keyboard.createCursorKeys();
 

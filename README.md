@@ -16,7 +16,7 @@ Phaser3.jsを使ってHTML5のゲームを作るときに参考にしてもら�
 
 [DarumaSan](https://tinycore-hisanori.github.io/phaser3_vsCpuDaruma/)
 
- ![QR01](https://user-images.githubusercontent.com/30931098/138745883-929f37da-bf0a-439e-823b-c4a821118bd5.png)
+ ![QR01](https://user-images.githubusercontent.com/30931098/143921826-85ac186c-4235-4e5e-8049-c68e868d257e.png)
 
 # Features
  

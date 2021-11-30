@@ -10,27 +10,11 @@
     <title></title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/howler@2.2.3/dist/howler.min.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
-
-<style type="text/css">
-    body {
-        background-color: black;
-        min-height: 100vh;
-        min-width: 100vw;
-        height: 100%;
-        width: 100vw;
-        margin: auto;
-    }
-
-    #container {
-        position: absolute;
-        overflow: hidden;
-    }
-</style>
 
 <body>
     <script>
-
         var seVoice = new Howl({
             src: ['voice_kr.mp3'],
             onend: function () {
@@ -62,6 +46,70 @@
         var txtTime;
         var remainTime = 200;
         var timeCnt = 0;
+        var playerFoot = -1;
+        var playerDistance = 0;
+        var gameState = 0;
+        var pushingKeyCode = 0;
+
+        function setAnimation() {
+            currentScene.anims.create({
+                key: "turnFront",
+                frameRate: 16,
+                frames: currentScene.anims.generateFrameNumbers("bossDaruma", {
+                    start: 0, end: 4
+                }), repeat: 0
+            });
+            currentScene.anims.create({
+                key: "turnBack",
+                frameRate: 20,
+                frames: currentScene.anims.generateFrameNumbers("bossDaruma", {
+                    start: 4, end: 8
+                }), repeat: 0
+            });
+            currentScene.anims.create({
+                key: "serifuSpeed0",
+                frameRate: 2.0,
+                frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
+                    start: 0, end: 10
+                }), repeat: 0
+            });
+            currentScene.anims.create({
+                key: "serifuSpeed1",
+                frameRate: 2.5,
+                frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
+                    start: 0, end: 10
+                }), repeat: 0
+            });
+            currentScene.anims.create({
+                key: "serifuSpeed2",
+                frameRate: 3.0,
+                frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
+                    start: 0, end: 10
+                }), repeat: 0
+            });
+            currentScene.anims.create({
+                key: "serifuSpeed3",
+                frameRate: 5.0,
+                frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
+                    start: 0, end: 10
+                }), repeat: 0
+            });
+            currentScene.anims.create({
+                key: "serifuSpeed4",
+                frameRate: 6.0,
+                frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
+                    start: 0, end: 10
+                }), repeat: 0
+            });
+            currentScene.anims.create({
+                key: "serifuSpeed5",
+                frameRate: 8.0,
+                frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
+                    start: 0, end: 10
+                }), repeat: 0
+            });
+        }
+
 
         function doGoal() {
             if (bGame == true) {
@@ -114,12 +162,6 @@
                     .tileSprite(0, 0, gameWidth, 290, 'bg000')
                     .setOrigin(0);
                 currentScene.cameras.main.setBackgroundColor(0x333333);
-                /*
-                let text = this.add
-                    .text(150, 100, "Daruma-San Game")
-                    .setFontSize(46)
-                    .setColor("#0");
-                */
                 clickButton = this.add
                     .text(100, 400, "START TO CLICK")
                     .setStroke("#0000ff", 4)
@@ -151,38 +193,34 @@
                 scene.add.existing(this);
                 this.setFrame(0);
                 this.cntTime = 0;
-                this.state = 0;//0:BACK
                 this.on('animationcomplete', this.doAnimCompleted);
             }
             preUpdate(time, delta) {
                 super.preUpdate(time, delta);
-                if (this.state == 2) {
+                if (gameState == 3) {
                     this.cntTime = this.cntTime - 1;
                     if (this.cntTime <= 0) {
-                        this.state = 3;
-                        gameState = 3;
+                        gameState = 4;
                         this.play("turnBack");
                     }
-                } else if (this.state == 4) {
+                } else if (gameState == 5) {
                     this.cntTime = this.cntTime - 1;
                     if (this.cntTime <= 0) {
-                        this.state = 0;
                         gameState = 0;
                     }
                 }
             }
             turnFront() {
-                this.state = 1;
+                gameState = 2;
                 this.play("turnFront");
             }
             doAnimCompleted() {
-                if (this.state == 1) {
-                    gameState = 2;//DEATH TIME
-                    this.cntTime = 120;//random
-                    this.state = 2;
-                } else if (this.state == 3) {
+                if (gameState == 2) {
+                    gameState = 3;//DEATH TIME
+                    this.cntTime = 120;
+                } else if (gameState == 4) {
                     this.cntTime = 60;
-                    this.state = 4;
+                    gameState = 5;
                 }
             }
         }
@@ -204,8 +242,6 @@
                     frameHeight: 200
                 });
                 this.load.spritesheet("bossSerifu", "./serifuSmall.png", {
-//                    frameWidth: 720,
-//                    frameHeight: 220
                     frameWidth: 360,
                     frameHeight: 110
                 });
@@ -222,82 +258,8 @@
                     .setOrigin(0);
                 bgBloodObj.visible = false;
 
-                currentScene.anims.create({
-                    key: "walking",
-                    frameRate: 4,
-                    frames: currentScene.anims.generateFrameNumbers("playerDaruma", {
-                        start: 0,
-                        end: 2
-                    }), repeat: -1
-                });
-                currentScene.anims.create({
-                    key: "turnFront",
-                    frameRate: 16,
-                    frames: currentScene.anims.generateFrameNumbers("bossDaruma", {
-                        start: 0,
-                        end: 4
-                    }), repeat: 0
-                });
-                currentScene.anims.create({
-                    key: "turnBack",
-                    frameRate: 20,
-                    frames: currentScene.anims.generateFrameNumbers("bossDaruma", {
-                        start: 4,
-                        end: 8
-                    }), repeat: 0
-                });
-
-                currentScene.anims.create({
-                    key: "serifuSpeed0",
-                    frameRate: 2.0,
-                    frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
-                        start: 0,
-                        end: 10
-                    }), repeat: 0
-                });
-                currentScene.anims.create({
-                    key: "serifuSpeed1",
-                    frameRate: 2.5,
-                    frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
-                        start: 0,
-                        end: 10
-                    }), repeat: 0
-                });
-                currentScene.anims.create({
-                    key: "serifuSpeed2",
-                    frameRate: 3.0,
-                    frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
-                        start: 0,
-                        end: 10
-                    }), repeat: 0
-                });
-                currentScene.anims.create({
-                    key: "serifuSpeed3",
-                    frameRate: 5.0,
-                    frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
-                        start: 0,
-                        end: 10
-                    }), repeat: 0
-                });
-                currentScene.anims.create({
-                    key: "serifuSpeed4",
-                    frameRate: 6.0,
-                    frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
-                        start: 0,
-                        end: 10
-                    }), repeat: 0
-                });
-                currentScene.anims.create({
-                    key: "serifuSpeed5",
-                    frameRate: 8.0,
-                    frames: currentScene.anims.generateFrameNumbers("bossSerifu", {
-                        start: 0,
-                        end: 10
-                    }), repeat: 0
-                });
 
                 boss = new BossDaruma(currentScene, gameWidth / 2, 150);
-                //                boss.anims.play('turnFront', true);
 
                 player = currentScene.add.sprite(gameWidth / 3, 1000, "playerDaruma");
                 player.setFrame(0);
@@ -308,8 +270,8 @@
 
                 serifuObj = currentScene.add.sprite(gameWidth / 2, 110, "bossSerifu");
                 serifuObj.on('animationcomplete', onSerifuComplete);
-//                serifuObj.setAlpha(0.5);
-//                serifuObj.setFrame(0);
+                //                serifuObj.setAlpha(0.5);
+                //                serifuObj.setFrame(0);
                 serifuObj.setScale(2.0);
 
                 cursors = this.input.keyboard.createCursorKeys();
@@ -329,6 +291,7 @@
                     },
                     this);
 
+                setAnimation();
 
                 txtTime = currentScene.add
                     .text(200, 1200, "残り:  ")
@@ -388,7 +351,7 @@
                     }
                     if (cursors.left.isDown || pushingKeyCode == 1) {
                         if (playerFoot != 0) {
-                            if (gameState == 2) {
+                            if (gameState == 3) {
                                 //DEATH
                                 doGameOver();
                             } else {
@@ -405,7 +368,7 @@
                         }
                     } else if (cursors.right.isDown || pushingKeyCode == 2) {
                         if (playerFoot != 1) {
-                            if (gameState == 2) {
+                            if (gameState == 3) {
                                 //DEATH
                                 doGameOver();
                             } else {
@@ -425,10 +388,6 @@
                 }
             }
         }
-        var playerFoot = -1;
-        var playerDistance = 0;
-        var gameState = 0;
-        var pushingKeyCode = 0;
 
 
         var config = {

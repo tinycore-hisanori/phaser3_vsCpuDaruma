@@ -231,8 +231,8 @@
                 super({ key: "gameScene", active: false });
             }
             preload() {
-                this.load.image("bgDaruma", "bg.jpg");
-                this.load.image("bgBlood", "bgBlood.png");
+                this.load.image("bgDaruma", "bgHalf.jpg");
+                this.load.image("bgBlood", "bgBloodHalf.png");
                 this.load.spritesheet("playerDaruma", "./player.png", {
                     frameWidth: 80,
                     frameHeight: 120
@@ -252,9 +252,11 @@
                 currentScene.add
                     .tileSprite(0, 0, gameWidth, gameHeight, "bgDaruma")
                     .setOrigin(0)
+                    .setScale(2.0)
                     .setScrollFactor(0);
 
                 bgBloodObj = currentScene.add.image(0, 0, "bgBlood")
+                    .setScale(2.0)
                     .setOrigin(0);
                 bgBloodObj.visible = false;
 
@@ -347,7 +349,6 @@
                         var a = Math.floor(Math.random() * speedVals.length);
                         seVoice.rate(speedVals[a], id2);
                         serifuObj.play("serifuSpeed" + a);
-
                     }
                     if (cursors.left.isDown || pushingKeyCode == 1) {
                         if (playerFoot != 0) {
@@ -360,7 +361,6 @@
                                 playerFoot = 0;
                                 player.setScale(10.0 - (9 / 800 * playerDistance));
                                 player.setFrame(1);
-
                                 if (player.y < 150) {
                                     doGoal();
                                 }
